@@ -1,0 +1,46 @@
+{
+  "folders": [
+    {
+      "path": "/Users/anietz/Documents/projects/agrostorm"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/react/glamCentral"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/practice/unitTesting"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/birrion/BirrionMobile"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/practice"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/others/gameApp"
+    },
+    {
+      "path": "/Users/anietz/Downloads/Angular"
+    },
+    {
+      "name": "agrostorm-poultry-frontend @ 122b556",
+      "uri": "gitlens://122b556/Users/anietz/Documents/projects/agrostorm/agrostorm-poultry-frontend?{\"path\":\"/Users/anietz/Documents/projects/agrostorm/agrostorm-poultry-frontend\",\"ref\":\"122b556fc05dd6a76d97437dd7c95446d85efb9d\",\"repoPath\":\"/Users/anietz/Documents/projects/agrostorm/agrostorm-poultry-frontend\"}"
+    },
+    {
+      "name": "agrostorm-epress-api @ d559672",
+      "uri": "gitlens://d559672/Users/anietz/Documents/projects/agrostorm/agrostorm-epress-api?{\"path\":\"/Users/anietz/Documents/projects/agrostorm/agrostorm-epress-api\",\"ref\":\"d5596723d096604acc2fa483b5e08e67a06503fe\",\"repoPath\":\"/Users/anietz/Documents/projects/agrostorm/agrostorm-epress-api\"}"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/paxnaira"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/react/glamCentralPure"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/birrion/BirrionMerchant"
+    },
+    {
+      "path": "/Users/anietz/Documents/projects/react/GlamsExpoNew"
+    }
+  ],
+  "settings": {}
+}

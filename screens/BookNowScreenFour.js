@@ -1,0 +1,873 @@
+import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  ImageBackground,
+  Vibration,
+  Platform,
+} from "react-native";
+import {
+  Icon,
+  Header,
+  Rating,
+  AirbnbRating,
+  Button,
+  Overlay,
+} from "react-native-elements";
+import DatePicker from "react-native-datepicker";
+import axios from "axios";
+import CONSTANTS from "../config/constant";
+import { Consumer, Context } from "../store/Provider";
+//import Toast from "react-native-simple-toast";
+import { Notifications } from "expo";
+import * as Permissions from "expo-permissions";
+import Constants from "expo-constants";
+
+import EventBus from "react-native-event-bus"
+
+var selectedStylist;
+var contextData;
+var address;
+
+class BookNowScreenFour extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      date: "",
+      showOverLay: false,
+      counter: 60,
+      bookPrice: 0,
+      showIncluded: false,
+      showReviews: false,
+      userToken: "",
+      appointmentDate: "",
+      userId: "",
+      category: "",
+      orderInfo: "",
+      fullStylistData: {},
+      selectedService: "",
+      selectedStylist: {}
+    };
+  }
+
+
+  static contextType = Context;
+  static navigationOptions = ({ navigation }) => {
+
+    selectedStylist = navigation.getParam("selectedStylist");
+    address = navigation.getParam("address");
+
+    return {
+      title: navigation.getParam("title", "CLASSIC"),
+      headerStyle: {
+        backgroundColor: "#FF9391",
+      },
+      headerTintColor: "#000",
+      headerTitleStyle: {
+        fontWeight: "bold",
+      },
+    };
+  };
+
+  gotoScreen = () => {
+    this.props.navigation.navigate("ViewItem");
+  };
+
+  showDatePicker = () => {
+    this.datepicker.onPressDate();
+  };
+
+  handleConfirm = (date) => {
+    this.setState({
+      date: date,
+    });
+  };
+
+  bookNow__ = () => {
+    this.setState({
+      showOverLay: true,
+    });
+
+    var self = this;
+
+    var intervalStuff = setInterval(function () {
+      self.setState({
+        counter: self.state.counter - 1,
+      });
+
+      if (self.state.counter == 40) {
+        self.setState({
+          showOverLay: false,
+        });
+      }
+    }, 1000);
+  };
+
+  bookNow = () => {
+    this.setState({
+      showOverLay: true,
+    });
+
+    let requestType = "future";
+    if (this.state.appointmentDate.today) {
+      requestType = "today";
+    }
+
+    let dataRequest = {
+      user: this.state.userId,
+      stylist: selectedStylist._id,
+      category: this.state.category,
+      service: selectedStylist.services[0].service,
+      total_cost: this.state.bookPrice,
+      type: requestType,
+      date: this.state.appointmentDate.date,
+      number_of_people: 1,
+      address: address
+    };
+
+    axios
+      .post(CONSTANTS.API_BASE_URL + "/book_stylist", dataRequest, {
+        headers: {
+          Authorization: "Bearer:" + this.state.userToken,
+        },
+      })
+      .then((response) => {
+        
+        if(response.data.response === "no_fcm_token"){
+            this.setState({
+              showOverLay: false,
+            });
+            contextData.showAlert(
+              "Please select another stylist to fulfill your request."
+            );
+            return;
+        }
+        
+        if(response.data.response === "booking_present"){
+            this.setState({
+              showOverLay: false,
+            });
+            contextData.showAlert(
+              "That stylist is booked for the selected date, Please select another stylist or pick another date."
+            );
+            return;
+        }
+
+        dataRequest.stylistData = selectedStylist;
+        dataRequest.order_id = response.data.response;
+
+        const contextData = this.context;
+
+        contextData._storeData("fullStylistData", JSON.stringify(dataRequest));
+        contextData._storeData("orderInfo", response.data.response);
+
+        self.setState({
+          fullStylistData: dataRequest,
+          orderInfo: response.data.response,
+        });
+        
+
+        // self.props.navigation.navigate("BookNowScreenFive", {
+        //   data: dataRequest
+        // });
+        //clearInterval(intervalStuff);
+      })
+      .catch((err) => {
+        console.log(err.response);
+        //self.props.navigation.navigate("BookNowScreenFive");
+        contextData.showAlert(
+          "Error occured processing request, try again later"
+        );
+        self.setState({
+          showOverLay: false,
+        });
+        //clearInterval(intervalStuff);
+      });
+  };
+
+  showIncluded = () => {
+    this.setState({
+      showIncluded: !this.state.showIncluded,
+    });
+  };
+
+  showReviews = () => {
+    this.setState({
+      showReviews: !this.state.showReviews,
+    });
+  };
+
+  setPrice = (price) => {
+    this.setState({
+      bookPrice: price,
+    });
+  };
+
+  cancelRequest = () => {
+    this.setState({
+      showOverLay: false,
+    });
+
+    if (this.state.orderInfo) {
+      console.log(this.state.orderInfo);
+      axios
+        .post(
+          CONSTANTS.API_BASE_URL + "/cancel_order",
+          { order_id: this.state.orderInfo },
+          {
+            headers: {
+              Authorization: "Bearer:" + this.state.userToken,
+            },
+          }
+        )
+        .then((response) => {
+          contextData.showAlert("Request cancelled successfully");
+
+          // self.props.navigation.navigate("BookNowScreenFive", {
+          //   data: dataRequest
+          // });
+          //clearInterval(intervalStuff);
+        })
+        .catch((err) => {
+          console.log(err.response);
+          //self.props.navigation.navigate("BookNowScreenFive");
+          contextData.showAlert("Error occured cancelling request");
+        });
+    } else {
+      contextData.showAlert("Request cancelled successfully");
+    }
+  };
+
+  registerForPushNotificationsAsync = async () => {
+    try{
+      if (Constants.isDevice) {
+        const { status: existingStatus } = await Permissions.getAsync(
+          Permissions.NOTIFICATIONS
+        );
+        let finalStatus = existingStatus;
+        if (existingStatus !== "granted") {
+          const { status } = await Permissions.askAsync(
+            Permissions.NOTIFICATIONS
+          );
+          finalStatus = status;
+        }
+        if (finalStatus !== "granted") {
+          alert("Failed to get push token for push notification!");
+          return;
+        }
+        token = await Notifications.getExpoPushTokenAsync();
+        console.log("EXPO token", token);
+      } else {
+        alert("Must use physical device for Push Notifications");
+      }
+  
+      if (Platform.OS === "android") {
+        Notifications.createChannelAndroidAsync("default", {
+          name: "default",
+          sound: true,
+          priority: "max",
+          vibrate: [0, 250, 250, 250],
+        });
+      }
+    }
+    catch(err){
+      contextData.showAlert(JSON.stringify(err));
+    }
+  };
+
+  _handleNotification = (notification) => {
+      var self = this.state
+
+      try{
+          Vibration.vibrate();
+          //console.log(notification);
+          //console.log(this.state.orderInfo); //Current request order ID
+      
+          if (
+            notification.data.stylist_response == "agreed" &&
+            notification.data.order
+          ) {
+            //contextData.showAlert("Booking Accepted");
+            //Accpted
+            this.setState({
+              showOverLay: false,
+            });
+      
+            this.props.navigation.navigate("BookNowScreenFive", {
+              data: this.state.fullStylistData,
+              order: this.state.orderInfo
+            });
+          } else if (
+            notification.data.stylist_response == "declined" &&
+            notification.data.order
+          ) {
+            contextData.showAlert(
+              "Request rejected by Stylist, please try again later"
+            );
+      
+            this.cancelRequest();
+          }
+      }
+      catch(e){
+        contextData.showAlert(JSON.stringify(e));
+      }
+  };
+
+  componentDidMount() {
+    // register push notifications
+    //this.registerForPushNotificationsAsync();
+
+    /*this._notificationSubscription = Notifications.addListener(
+      this._handleNotification
+    );*/
+
+    EventBus.getInstance().addListener("stylist_response", this.listener = data => {
+      // handle the event
+      if(data.order_id  && data.response === "agreed"){
+        this.setState({
+          showOverLay: false,
+        });
+  
+        this.props.navigation.navigate("BookNowScreenFive", {
+          data: this.state.fullStylistData,
+          order: this.state.orderInfo
+        });
+      }
+      else if(data.order_id && data.response === "declined"){
+        contextData.showAlert(
+          "Request rejected by Stylist, please try again later"
+        );
+  
+        this.cancelRequest();
+      }
+    })
+
+    contextData = this.context;
+    self = this;
+    contextData._retrieveData("user").then(function (res) {
+      let res_ = JSON.parse(res);
+      self.setState({ userId: res_._id });
+    });
+
+    contextData._retrieveData("token").then(function (token) {
+      self.setState({ userToken: token });
+    });
+
+    contextData._retrieveData("appointmentDate").then((appointmentDate_) => {
+      self.setState({ appointmentDate: JSON.parse(appointmentDate_) });
+    });
+
+    contextData._retrieveData("categoryInfo").then((categoryInfo_) => {
+      //console.log(categoryInfo_);
+      let cat = JSON.parse(categoryInfo_);
+      self.setState({ category: cat._id });
+    });
+
+    this.setState({
+      bookPrice: selectedStylist.services[0].price_one.price,
+    });
+
+    contextData._retrieveData('categoryInfo')
+          .then(categoryInfo => {
+              categoryInfo = JSON.parse(categoryInfo)
+
+              selectedStylist.services.map(service => {
+                if(categoryInfo._id.toString() === service.service.toString()){
+                  self.setState({
+                    selectedService: service
+                  })
+                }
+              })
+              
+          })
+          .catch(err => {
+            console.log(err)
+          })
+
+  }
+
+  componentWillUnmount() {
+    EventBus.getInstance().removeListener(this.listener);
+  }
+
+  render() {
+    //console.log(selectedStylist);
+    return (
+      <View style={styles.container}>
+        <Overlay
+          overlayStyle={{ height: "50%" }}
+          isVisible={this.state.showOverLay}
+        >
+          <View
+            style={{
+              flexDirection: "column",
+              flex: 1,
+              alignContent: "center",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              source={require("../images/home/spin.gif")}
+              style={{ width: 100, height: 100 }}
+            />
+            <Text
+              style={{
+                fontSize: 17,
+                marginTop: 15,
+                marginBottom: 10,
+                textAlign: "center",
+              }}
+            >
+              Waiting For Confirmation from{" "}
+              {selectedStylist.name_of_business
+                ? selectedStylist.name_of_business
+                : "N/A"}
+            </Text>
+            {/* <Text style={{ fontSize: 22, fontWeight: "bold" }}>
+              {this.state.counter}
+            </Text> */}
+            <TouchableOpacity
+              onPress={() => this.cancelRequest()}
+              style={{
+                backgroundColor: "#000",
+                padding: 10,
+                borderRadius: 12,
+                width: "80%",
+              }}
+            >
+              <Text
+                style={{ color: "#fff", fontSize: 16, textAlign: "center" }}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Overlay>
+
+        <ScrollView>
+          <View>
+            <Image
+              source={{ uri: selectedStylist.image_of_business }}
+              style={{ width: "100%", height: 240 }}
+            />
+            <View
+              style={{
+                flex: 1,
+                flexDirection: "row",
+                padding: 13,
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: "#fff",
+              }}
+            >
+              <View style={{ width: "60%", flex: 1, flexDirection: "column" }}>
+                <Text
+                  style={{ fontSize: 14, color: "#000", fontWeight: "500" }}
+                >
+                  {selectedStylist.name_of_business
+                    ? selectedStylist.name_of_business
+                    : "N/A"}
+                </Text>
+                <View
+                  style={{
+                    marginTop: 8,
+                    flex: 1,
+                    flexDirection: "row",
+                    justifyContent: "flex-start",
+                  }}
+                >
+                  <Text style={{ fontSize: 12 }}>{selectedStylist.rating ? selectedStylist.rating : 0}</Text>
+                  <AirbnbRating
+                    readonly
+                    count={5}
+                    defaultRating={selectedStylist.rating ? selectedStylist.rating : 0}
+                    size={10}
+                    showRating={false}
+                  />
+                </View>
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    justifyContent: "flex-start",
+                  }}
+                >
+                  {selectedStylist.online ? (
+                    <View
+                      style={{
+                        marginTop: 8,
+                        flex: 1,
+                        flexDirection: "row",
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                        <View style={styles.dotItem}></View>
+                        <View style={{ marginLeft: 3 }}>
+                          <Text style={{ fontSize: 12 }}>online</Text>
+                        </View>
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        marginTop: 8,
+                        flex: 1,
+                        flexDirection: "row",
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                        <View style={styles.dotItemOffline}></View>
+                        <View style={{ marginLeft: 3 }}>
+                          <Text style={{ fontSize: 12 }}>offline</Text>
+                        </View>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <View style={{ width: "20%" }}></View>
+              
+            </View>
+            <View
+              style={{
+                padding: 13,
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: "#fff",
+              }}
+            >
+              <Text style={{ fontSize: 12 }}>
+                {selectedStylist.description_of_business}
+              </Text>
+            </View>
+            <View
+              style={{
+                padding: 13,
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: "#fff",
+              }}
+            >
+              <View>
+                <Text style={{ fontSize: 14, textAlign: "center" }}>
+                  PRICE RANGE
+                </Text>
+              </View>
+              
+              {
+                this.state.selectedService ? 
+
+                <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginTop: 10,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    this.setPrice(this.state.selectedService.price_one.price);
+                  }}
+                >
+                  <Text style={styles.price}>
+                    N{this.state.selectedService.price_one.price}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    this.setPrice(this.state.selectedService.price_two.price);
+                  }}
+                >
+                  <Text style={styles.price}>
+                    N{this.state.selectedService.price_two.price}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    this.setPrice(
+                      this.state.selectedService.price_three.price
+                    );
+                  }}
+                >
+                  <Text style={styles.price}>
+                    N{this.state.selectedService.price_three.price}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* <Text style={styles.price}>
+                  N{selectedStylist.services[0].price_one.price}
+                </Text>
+                <Text style={styles.price}>
+                  N{selectedStylist.services[0].price_two.price}
+                </Text>
+                <Text style={styles.price}>
+                  N{selectedStylist.services[0].price_three.price}
+                </Text> */}
+              </View>
+              : <View></View>
+              }
+
+            </View>
+            <View
+              style={{
+                padding: 13,
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: "#fff",
+              }}
+            >
+                <TouchableOpacity onPress={this.showIncluded}>
+                   <View 
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginTop: 10,
+                    }}>
+                      <Text style={{ fontSize: 13 }}>What’s Included?</Text>
+                      {this.state.showIncluded ? (
+                        <Icon
+                          name="chevron-down"
+                          type="font-awesome"
+                          color="#000"
+                        />
+                      ) : (
+                        <Icon name="chevron-up" type="font-awesome" color="#000" />
+                      )}
+                   </View>
+                </TouchableOpacity>
+            </View>
+
+            {this.state.showIncluded ? (
+              <View
+                style={{
+                  backgroundColor: "#F4B9B8",
+                  paddingTop: 20,
+                  paddingBottom: 20,
+                  paddingRight: 30,
+                  paddingLeft: 30,
+                  flex: 1,
+                  flexDirection: "column",
+                }}
+              >
+                <View style={{ flex: 1, flexDirection: "row" }}>
+                  <Icon
+                    name="check"
+                    type="font-awesome"
+                    color="#000"
+                    size={14}
+                  />
+                  <Text style={styles.includedText}>
+                    {this.state.selectedService.price_one.whats_included}
+                  </Text>
+                </View>
+                <View style={{ flex: 1, flexDirection: "row" }}>
+                  <Icon
+                    name="check"
+                    type="font-awesome"
+                    color="#000"
+                    size={14}
+                  />
+                  <Text style={styles.includedText}>
+                    {this.state.selectedService.price_two.whats_included}
+                  </Text>
+                </View>
+                <View style={{ flex: 1, flexDirection: "row" }}>
+                  <Icon
+                    name="check"
+                    type="font-awesome"
+                    color="#000"
+                    size={14}
+                  />
+                  <Text style={styles.includedText}>
+                    {this.state.selectedService.price_three.whats_included}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View></View>
+            )}
+
+            <View
+              style={{
+                padding: 13,
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: "#fff",
+              }}
+            >
+              
+              <TouchableOpacity onPress={this.showReviews}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginTop: 10,
+                    }}>
+                    <Text style={{ fontSize: 13 }}>Customer Reviews</Text>
+                    {this.state.showReviews ? (
+                      <Icon
+                        name="chevron-down"
+                        type="font-awesome"
+                        color="#000"
+                      />
+                    ) : (
+                      <Icon
+                        name="chevron-up"
+                        type="font-awesome"
+                        color="#000"
+                      />
+                    )}
+                  </View>
+              </TouchableOpacity>
+            </View>
+            {this.state.showReviews ? (
+              <View
+                style={{
+                  backgroundColor: "#F4B9B8",
+                  paddingTop: 20,
+                  paddingBottom: 20,
+                  paddingRight: 30,
+                  paddingLeft: 30,
+                  flex: 1,
+                }}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "column",
+                    justifyContent: "flex-start",
+                  }}
+                >
+                  <Text style={{ fontSize: 12 }}>Opara Nze</Text>
+                  <AirbnbRating
+                    readonly
+                    count={5}
+                    defaultRating={0}
+                    size={10}
+                    showRating={false}
+                  />
+                  <Text style={{ fontSize: 10 }}>
+                    The hair was perfectly made and she showed perfection
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View></View>
+            )}
+
+            <TouchableOpacity
+              onPress={() => this.bookNow()}
+              style={{
+                backgroundColor: "#fff",
+                paddingTop: 20,
+                paddingBottom: 20,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+            >
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: "#FF5B58",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              >
+                BOOK NOW (N{this.state.bookPrice})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  includedText: {
+    marginLeft: 30,
+    fontSize: 15,
+  },
+  price: {
+    fontSize: 18,
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    color: "#FF9391",
+    fontWeight: "800",
+  },
+  header: {
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "700",
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  firstText: {
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  FisrtInnerText: {
+    textAlign: "center",
+    fontWeight: "500",
+  },
+  container: {
+    backgroundColor: "#FF9391",
+    flex: 1,
+  },
+  child: {
+    borderRadius: 12,
+    backgroundColor: "#000",
+    marginTop: 15,
+    marginBottom: 15,
+    marginRight: 13,
+    marginLeft: 13,
+    paddingTop: 15,
+    paddingBottom: 15,
+    paddingRight: 10,
+    paddingLeft: 10,
+  },
+  buttonBigtext: {
+    fontSize: 21,
+    textAlign: "center",
+    color: "#FAFF00",
+  },
+  buttonSmalltext: {
+    fontSize: 10,
+    textAlign: "center",
+    color: "#FAFF00",
+  },
+  center: {
+    textAlign: "center",
+  },
+  bottomPart: {
+    fontSize: 10,
+    paddingRight: 13,
+    paddingLeft: 13,
+    marginTop: 10,
+    letterSpacing: 0.5,
+    fontWeight: "200",
+  },
+  dotItem: {
+    borderRadius: 100,
+    height: 12,
+    width: 12,
+    backgroundColor: "#1FD33B",
+    marginTop: 4
+  },
+  dotItemOffline: {
+    borderRadius: 100,
+    height: 12,
+    width: 12,
+    backgroundColor: "red",
+    marginTop: 4
+  },
+});
+export default BookNowScreenFour;
