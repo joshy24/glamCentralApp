@@ -146,6 +146,7 @@ class DashboardScreen extends React.Component {
       }
   };
 
+  
   componentDidMount() {
       contextData = this.context;
       contextData.getServices();
