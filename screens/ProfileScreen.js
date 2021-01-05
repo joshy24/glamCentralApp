@@ -23,7 +23,8 @@ class ProfileScreen extends React.Component {
       lastname: userInfo.lastname,
       phoneNumber: userInfo.phone_number,
       email: userInfo.email,
-      dob: userInfo.dob
+      dob: userInfo.dob,
+      address: userInfo.address
     };
   }
 
@@ -120,6 +121,17 @@ class ProfileScreen extends React.Component {
               inputContainerStyle={{ borderBottomColor: "#000" }}
               leftIcon={{ size: 12, type: "font-awesome", name: "envelope" }}
               value={this.state.email}
+            />
+          </View>
+
+          <View style={styles.formGroup}>
+            <Input
+              label="ADDRESS"
+              labelStyle={styles.label}
+              leftIconContainerStyle={styles.iconInput}
+              inputContainerStyle={{ borderBottomColor: "#000" }}
+              leftIcon={{ size: 12, type: "font-awesome", name: "address-card" }}
+              value={this.state.address}
             />
           </View>
 

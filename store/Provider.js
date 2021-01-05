@@ -153,7 +153,7 @@ class Provider extends Component {
         }
       })
       .catch((e) => {
-        console.log(e.response.data);
+        
         this.setState({
           loggingIn: false,
         });
@@ -268,11 +268,9 @@ class Provider extends Component {
   };
 
   getServices = () => {
-    console.log(this.state.token);
 
     AsyncStorage.getItem("token")
       .then((token) => {
-        console.log(token);
         axios
           .get(CONSTANTS.API_BASE_URL + "/services", {
             headers: {
@@ -282,6 +280,8 @@ class Provider extends Component {
           .then((response) => {
             //console.log(response.data);
             // console.log("Services success")
+
+            console.log(response.data)
 
             this._storeData("services", JSON.stringify(response.data));
             this.setState({

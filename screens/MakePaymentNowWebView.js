@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import PaystackWebView from "react-native-paystack-webview";
 import axios from "axios";
 import CONSTANTS from "../config/constant";
@@ -98,9 +98,10 @@ class MakePaymentNowWebView extends React.Component {
           SafeAreaViewContainer={{ marginTop: 5 }}
           SafeAreaViewContainerModal={{ marginTop: 5 }}
           onCancel={(e) => {
+            Alert.alert("Payment was successful", JSON.stringify(e))
             // handle response here
-            if (e && e.data && e.data.status == "success") {
-              this.confirmPaymentNow(e.data.reference);
+            if (e && e.data && e.data.transactionRef.status == "success") {
+              this.confirmPaymentNow(e.data.transactionRef.reference);
             } else {
               // alert("Error");
               contextData.showAlert("Payment was cancelled", "danger");
@@ -110,7 +111,7 @@ class MakePaymentNowWebView extends React.Component {
           }}
           onSuccess={(res) => {
             // handle response here
-            this.confirmPaymentNow(res.data.reference);
+            this.confirmPaymentNow(res.data.transactionRef.reference);
           }}
           autoStart={true}
         />

@@ -11,6 +11,7 @@ const Payment = ({ route, navigation }) => {
         showPayButton={false}
         paystackKey="pk_test_74edfd9d3c3ddda8aa83a097f4a835b2515046c7"
         amount={120000}
+        channels={JSON.stringify(["card"])}
         billingEmail="joshuamajeb24@gmail.com"
         billingMobile="08098336959"
         billingName="Oluwatobi Shokunbi"

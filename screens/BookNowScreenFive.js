@@ -91,7 +91,7 @@ class BookNowScreenFive extends React.Component {
             textAlign: "center"
           }}
         >
-          Your Appointment with {requestInfo.stylistData.name_of_business} have
+          Your appointment with {requestInfo.stylistData.name_of_business} has
           been booked for {requestInfo.date}
         </Text>
 

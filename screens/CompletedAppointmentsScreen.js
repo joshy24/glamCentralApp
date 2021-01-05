@@ -364,15 +364,40 @@ class CompletedAppointmentsScreen extends React.Component {
                         </FormContainer>
                       </View> */}
 
-                      <View style={styles.buttonContainer}>
-                        <FormContainer>
-                          <FormButton
-                            label="Rate Stylist"
-                            styles={{ label: styles.buttonWhiteText }}
-                            onPress={() => this.rateStylist(item)}
-                          />
-                        </FormContainer>
+                      <View style={{ marginTop: 5, marginBottom: 5 }}>
+                        <Text style={{ fontSize: 11 }}>
+                          User Rating
+                        </Text>
+
+                        {
+                          item.user_rating ? 
+                          <AirbnbRating
+                              readonly
+                              count={5}
+                              defaultRating={item.user_rating ? item.user_rating : 0}
+                              size={10}
+                              showRating={false}
+                            /> : <View></View>
+                        }
                       </View>
+
+                      <View style={{ marginTop: 5, marginBottom: 5 }}>
+                        <Text style={{ fontSize: 11 }}>
+                          Stylist Rating
+                        </Text>
+
+                        {
+                          item.stylist_rating ? 
+                          <AirbnbRating
+                              readonly
+                              count={5}
+                              defaultRating={item.stylist_rating ? item.stylist_rating : 0}
+                              size={10}
+                              showRating={false}
+                            /> : <View></View>
+                        }
+                      </View>
+                        
                     </View>
                   </View>
                 );

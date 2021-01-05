@@ -206,7 +206,7 @@ class DashboardScreen extends React.Component {
               </View>
               <TouchableOpacity
                 style={styles.child}
-                onPress={() => this.gotoPage("MAKE UP styles")}
+                onPress={() => this.gotoPage("MAKEUP styles")}
                 //onPress={() => this.gotoTest()}
               >
                 <View style={styles.leftSide}>
@@ -233,7 +233,7 @@ class DashboardScreen extends React.Component {
                     }}
                   > */}
                   <View>
-                    <Text style={styles.bigText}>MAKE UP</Text>
+                    <Text style={styles.bigText}>MAKEUP</Text>
                   </View>
                   <View>
                     <Text style={styles.smallText}>

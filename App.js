@@ -480,7 +480,7 @@ const AppSwitchNavigator = createSwitchNavigator(
       screen: MakePaymentNow,
     },
     MakePaymentNowWebView: {
-      screen: Payment,
+      screen: MakePaymentNowWebView,
     },
     //Auth: { screen: AppStackNavigator },
     WalkThrough: {

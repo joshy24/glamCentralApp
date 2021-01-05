@@ -34,6 +34,27 @@ var selectedStylist;
 var contextData;
 var address;
 
+/*
+{"_id":{"$oid":"5fd12b70d83ed100175ba0db"},
+"date":{"$date":"2020-12-09T20:53:00.000Z"},
+"stylist_confirmed":true,
+"customer_confirmed":true,
+"stylist":{"$oid":"5fa950e962811600171086f1"},
+"service":{"$oid":"5fa94f3c62811600171086b8"},
+"total_cost":10000,
+"user":{"$oid":"5fa99f0935a05e0017d97aca"},
+"type":"today",
+"number_of_people":1,
+"number":"1607543664861",
+"address":"28,David Ogundele street, ipaja, lagos",
+"status":"fulfilled",
+"category":"5fa94f3c62811600171086b8",
+"created":{"$date":"2020-12-09T19:54:24.862Z"},
+"__v":0,
+"customer_comment":"Great work",
+"user_rating":4}
+*/
+
 class BookNowScreenFour extends React.Component {
   constructor(props) {
     super(props);
@@ -43,6 +64,7 @@ class BookNowScreenFour extends React.Component {
       showOverLay: false,
       counter: 60,
       bookPrice: 0,
+      whats_included: "",
       showIncluded: false,
       showReviews: false,
       userToken: "",
@@ -203,9 +225,10 @@ class BookNowScreenFour extends React.Component {
     });
   };
 
-  setPrice = (price) => {
+  setPrice = (price, wi) => {
     this.setState({
       bookPrice: price,
+      whats_included: wi
     });
   };
 
@@ -369,10 +392,6 @@ class BookNowScreenFour extends React.Component {
       self.setState({ category: cat._id });
     });
 
-    this.setState({
-      bookPrice: selectedStylist.services[0].price_one.price,
-    });
-
     contextData._retrieveData('categoryInfo')
           .then(categoryInfo => {
               categoryInfo = JSON.parse(categoryInfo)
@@ -381,6 +400,8 @@ class BookNowScreenFour extends React.Component {
                 if(categoryInfo._id.toString() === service.service.toString()){
                   self.setState({
                     selectedService: service
+                    bookPrice: service.price_one.price,
+                    whats_included: service.price_one.whats_included
                   })
                 }
               })
@@ -571,33 +592,33 @@ class BookNowScreenFour extends React.Component {
               >
                 <TouchableOpacity
                   onPress={() => {
-                    this.setPrice(this.state.selectedService.price_one.price);
+                    this.setPrice(this.state.selectedService.price_one.price, this.state.selectedService.price_one.whats_included);
                   }}
                 >
                   <Text style={styles.price}>
-                    N{this.state.selectedService.price_one.price}
+                  ₦{this.state.selectedService.price_one.price}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => {
-                    this.setPrice(this.state.selectedService.price_two.price);
+                    this.setPrice(this.state.selectedService.price_two.price, this.state.selectedService.price_two.whats_included);
                   }}
                 >
                   <Text style={styles.price}>
-                    N{this.state.selectedService.price_two.price}
+                  ₦{this.state.selectedService.price_two.price}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   onPress={() => {
                     this.setPrice(
-                      this.state.selectedService.price_three.price
+                      this.state.selectedService.price_three.price, this.state.selectedService.price_three.whats_included
                     );
                   }}
                 >
                   <Text style={styles.price}>
-                    N{this.state.selectedService.price_three.price}
+                  ₦{this.state.selectedService.price_three.price}
                   </Text>
                 </TouchableOpacity>
 
@@ -664,29 +685,7 @@ class BookNowScreenFour extends React.Component {
                     size={14}
                   />
                   <Text style={styles.includedText}>
-                    {this.state.selectedService.price_one.whats_included}
-                  </Text>
-                </View>
-                <View style={{ flex: 1, flexDirection: "row" }}>
-                  <Icon
-                    name="check"
-                    type="font-awesome"
-                    color="#000"
-                    size={14}
-                  />
-                  <Text style={styles.includedText}>
-                    {this.state.selectedService.price_two.whats_included}
-                  </Text>
-                </View>
-                <View style={{ flex: 1, flexDirection: "row" }}>
-                  <Icon
-                    name="check"
-                    type="font-awesome"
-                    color="#000"
-                    size={14}
-                  />
-                  <Text style={styles.includedText}>
-                    {this.state.selectedService.price_three.whats_included}
+                    {this.state.whats_included}
                   </Text>
                 </View>
               </View>
@@ -738,25 +737,29 @@ class BookNowScreenFour extends React.Component {
                   flex: 1,
                 }}
               >
-                <View
-                  style={{
-                    flex: 1,
-                    flexDirection: "column",
-                    justifyContent: "flex-start",
-                  }}
-                >
-                  <Text style={{ fontSize: 12 }}>Opara Nze</Text>
-                  <AirbnbRating
-                    readonly
-                    count={5}
-                    defaultRating={0}
-                    size={10}
-                    showRating={false}
-                  />
-                  <Text style={{ fontSize: 10 }}>
-                    The hair was perfectly made and she showed perfection
-                  </Text>
-                </View>
+                {
+                  this.state.selectedService.reviews.map(review => {
+                      return <View
+                      style={{
+                        flex: 1,
+                        flexDirection: "column",
+                        justifyContent: "flex-start",
+                      }}
+                    >
+                      <Text style={{ fontSize: 12 }}>{review.name}</Text>
+                      <AirbnbRating
+                        readonly
+                        count={5}
+                        defaultRating={review.rating}
+                        size={10}
+                        showRating={false}
+                      />
+                      <Text style={{ fontSize: 10 }}>
+                        {review.comment}
+                      </Text>
+                    </View>
+                  })
+                }
               </View>
             ) : (
               <View></View>
@@ -780,7 +783,7 @@ class BookNowScreenFour extends React.Component {
                   fontWeight: "bold",
                 }}
               >
-                BOOK NOW (N{this.state.bookPrice})
+                BOOK NOW (₦{this.state.bookPrice})
               </Text>
             </TouchableOpacity>
           </View>

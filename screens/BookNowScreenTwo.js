@@ -260,6 +260,7 @@ class BookNowScreenTwo extends React.Component {
     const itemText = e.nativeEvent.text;
     this.setState({
       address: itemText,
+      finalAddress: itemText,
       checked: false,
     });
   };
@@ -371,6 +372,7 @@ class BookNowScreenTwo extends React.Component {
                 onSelectedItemsChange={(item) =>
                   this.setState({
                     stateName: item[0],
+                    finalState: item[0],
                     showStateSearch: false,
                   })
                 }
