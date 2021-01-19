@@ -145,7 +145,7 @@ class BookNowScreenFour extends React.Component {
       user: this.state.userId,
       stylist: selectedStylist._id,
       category: this.state.category,
-      service: selectedStylist.services[0].service,
+      service: this.state.selectedService.service,
       total_cost: this.state.bookPrice,
       type: requestType,
       date: this.state.appointmentDate.date,
@@ -399,7 +399,7 @@ class BookNowScreenFour extends React.Component {
               selectedStylist.services.map(service => {
                 if(categoryInfo._id.toString() === service.service.toString()){
                   self.setState({
-                    selectedService: service
+                    selectedService: service,
                     bookPrice: service.price_one.price,
                     whats_included: service.price_one.whats_included
                   })
@@ -738,27 +738,45 @@ class BookNowScreenFour extends React.Component {
                 }}
               >
                 {
-                  this.state.selectedService.reviews.map(review => {
-                      return <View
-                      style={{
-                        flex: 1,
-                        flexDirection: "column",
-                        justifyContent: "flex-start",
-                      }}
-                    >
-                      <Text style={{ fontSize: 12 }}>{review.name}</Text>
-                      <AirbnbRating
-                        readonly
-                        count={5}
-                        defaultRating={review.rating}
-                        size={10}
-                        showRating={false}
-                      />
-                      <Text style={{ fontSize: 10 }}>
-                        {review.comment}
-                      </Text>
-                    </View>
-                  })
+                  (this.state.selectedService.reviews && this.state.selectedService.reviews.length > 0) 
+
+                  ? this.state.selectedService.reviews.map((review,index) => {
+                    return <View
+
+                    key={index}
+
+                    style={{
+                      flex: 1,
+                      flexDirection: "column",
+                      justifyContent: "flex-start",
+                      marginBottom: 18
+                    }}
+                  >
+                    <Text style={{ fontSize: 12 }}>{review.name}</Text>
+                    <AirbnbRating
+                      readonly
+                      count={5}
+                      defaultRating={review.rating}
+                      size={10}
+                      showRating={false}
+                    />
+                    <Text style={{ fontSize: 10 }}>
+                      {review.comment}
+                    </Text>
+                  </View>
+                }) : 
+
+                <View style={{
+                  flex: 1,
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: 16,
+                  marginBottom: 16
+                }}>
+                  <Text>No reviews present</Text>
+                </View>
+
                 }
               </View>
             ) : (

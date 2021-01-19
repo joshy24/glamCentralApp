@@ -124,6 +124,26 @@ class CompletedAppointmentsScreen extends React.Component {
     }
   };
 
+  getWhatsIncluded = (service, stylist, total_cost) => {
+    for(var i = 0; i < stylist.services.length; i++){
+       if(service.toString() == stylist.services[i].service.toString()){
+         //we have our service, its to find the amount
+
+         if(stylist.services[i].price_one.price == total_cost){
+            return stylist.services[i].price_one.whats_included
+         }
+
+         if(stylist.services[i].price_two.price == total_cost){
+            return stylist.services[i].price_two.whats_included
+         }
+
+         if(stylist.services[i].price_three.price == total_cost){
+            return stylist.services[i].price_three.whats_included
+         }
+       }
+    }
+  }
+
   rebook = () => {};
 
   rateStylist = (item) => {
@@ -335,9 +355,7 @@ class CompletedAppointmentsScreen extends React.Component {
                     <View style={{ marginTop: 5, marginBottom: 5 }}>
                       <Text style={{ fontSize: 11 }}>
                         Includes:{" "}
-                        {item.stylist.services[0].price_one.whats_included}{" "}
-                        {item.stylist.services[1].price_one.whats_included}{" "}
-                        {item.stylist.services[2].price_one.whats_included}
+                        {this.getWhatsIncluded(item.service._id, item.stylist, item.total_cost)}{" "}
                       </Text>
                     </View>
                     <View style={{ marginTop: 5, marginBottom: 5 }}>
@@ -366,7 +384,7 @@ class CompletedAppointmentsScreen extends React.Component {
 
                       <View style={{ marginTop: 5, marginBottom: 5 }}>
                         <Text style={{ fontSize: 11 }}>
-                          User Rating
+                          Your Rating
                         </Text>
 
                         {
