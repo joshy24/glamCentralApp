@@ -14,7 +14,7 @@ import {
 import { Icon, Header, Overlay } from "react-native-elements";
 import { CheckBox } from "react-native-elements";
 //import Toast from "react-native-simple-toast";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import axios from "axios";
 import Spinner from "react-native-loading-spinner-overlay";
 import FormButton from "./Forms/Button";
@@ -205,7 +205,7 @@ class BookNowScreenTwo extends React.Component {
               lng: position.coords.longitude,
             };
             axios
-              .post(CONSTANTS.API_BASE_URL + "/address", dataRequest)
+              .post(GLAM_CONSTANTS.API_BASE_URL + "/address", dataRequest)
               .then((response) => {
                 //console.log(response.data);
 

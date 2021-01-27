@@ -11,8 +11,8 @@ import {
   ImageBackground,
 } from "react-native";
 import { Icon, Header } from "react-native-elements";
-import DatePicker from "react-native-datepicker";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 import { Consumer, Context } from "../store/Provider";
 
 var pageTitle, generalCategoryTitle, categoryInfo;
@@ -22,9 +22,9 @@ class BookNowScreenOne extends React.Component {
     super(props);
 
     this.state = {
-      date: "",
-      time: "",
+      date: new Date(),
       showDateTime: false,
+      mode: "date"
     };
   }
 
@@ -57,16 +57,71 @@ class BookNowScreenOne extends React.Component {
     this.props.navigation.navigate("ViewItem");
   };
 
-  showDatePicker = () => {
-    this.datepicker.onPressDate();
-    //this.setState({ showDateTime: true });
+  showDatePicker = (val) => {
+      switch(val){
+          case 1:
+              this.setState({
+                mode: "time",
+                showDateTime: true
+              })
+          break;
+          case 2:
+              this.setState({
+                mode: "datetime",
+                showDateTime: true
+              })
+          break;
+      }
   };
 
-  showDatePicker2 = () => {
-    this.datepicker2.onPressDate();
+  onChange = (date) => {
+    console.log(date.nativeEvent.timestamp)
+
+    if (date.type === 'dismissed') {
+        // dismissedAction
+        this.setState({
+          showDateTime: false,
+        });
+    }
+    else{
+        if(this.state.mode == "datetime"){
+            this.setState({
+              date: new Date(date.nativeEvent.timestamp),
+              showDateTime: false,
+            });
+        
+            this.props.navigation.navigate("BookNowScreenTwo", {
+              title: pageTitle,
+              appointmentDate: {
+                today: false,
+                date: date.nativeEvent.timestamp,
+              },
+            });
+        }
+
+        if(this.state.mode == "time"){
+            let formattedDate = this.formatDate(new Date());
+          
+            this.setState({
+              date: new Date(date.nativeEvent.timestamp),
+              showDateTime: false,
+            });
+        
+            this.props.navigation.navigate("BookNowScreenTwo", {
+              title: pageTitle,
+              appointmentDate: { today: true, date: date.nativeEvent.timestamp },
+            });
+        }
+    }
+  }
+
+  formatDate = (date) => {
+    //2020-04-30 13:42
+    let d = new Date(date);
+    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
   };
 
-  handleConfirmFuture = (date) => {
+  /*handleConfirmFuture = (date) => {
     console.log(date);
     this.setState({
       date: date,
@@ -80,13 +135,9 @@ class BookNowScreenOne extends React.Component {
         date: date,
       },
     });
-  };
+  };*/
 
-  formatDate = (date) => {
-    //2020-04-30 13:42
-    let d = new Date(date);
-    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
-  };
+  /*
 
   handleConfirmImmediately = (time) => {
     let formattedDate = this.formatDate(new Date());
@@ -99,7 +150,7 @@ class BookNowScreenOne extends React.Component {
       title: pageTitle,
       appointmentDate: { today: true, date: formattedDate + " " + time },
     });
-  };
+  };*/
 
   render() {
     return (
@@ -120,7 +171,7 @@ class BookNowScreenOne extends React.Component {
           <View></View>
         )} */}
 
-        <DatePicker
+        {/*<DateTimePicker
           ref={(d) => {
             this.datepicker = d;
           }}
@@ -130,19 +181,19 @@ class BookNowScreenOne extends React.Component {
             borderRadius: 12,
             display: "none",
           }}
-          date={this.state.date}
+          value={this.state.date}
           mode="datetime"
           placeholder="Appointment Date"
           // format="YYYY-MM-DD"
           confirmBtnText="Confirm"
           cancelBtnText="Cancel"
           showIcon={false}
-          onDateChange={(date) => {
+          onChange={(date) => {
             this.handleConfirmFuture(date);
           }}
         />
 
-        <DatePicker
+        <DateTimePicker
           ref={(d) => {
             this.datepicker2 = d;
           }}
@@ -152,17 +203,36 @@ class BookNowScreenOne extends React.Component {
             borderRadius: 12,
             display: "none",
           }}
-          date={this.state.time}
+          value={this.state.time}
           mode="time"
           placeholder="Appointment Time"
           // format="YYYY-MM-DD"
           confirmBtnText="Confirm"
           cancelBtnText="Cancel"
           showIcon={false}
-          onDateChange={(date) => {
+          onChange={(date) => {
             this.handleConfirmImmediately(date);
           }}
-        />
+        />*/}
+
+        {this.state.showDateTime && (
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#fff",
+                    borderRadius: 12,
+                    display: "none",
+                  }}
+                  value={this.state.date}
+                  mode={this.state.mode}
+                  confirmBtnText="Confirm"
+                  cancelBtnText="Cancel"
+                  
+                  display="default"
+                  onChange={this.onChange}
+                />
+              )}
 
         <View style={styles.firstText}>
           <Text style={styles.FisrtInnerText}>When would you like to book</Text>
@@ -171,7 +241,7 @@ class BookNowScreenOne extends React.Component {
 
         <TouchableOpacity
           style={styles.child}
-          onPress={() => this.showDatePicker2()}
+          onPress={() => this.showDatePicker(1)}
         >
           <Text style={styles.buttonBigtext}>IMMEDIATELY</Text>
           <Text style={styles.buttonSmalltext}>
@@ -181,7 +251,7 @@ class BookNowScreenOne extends React.Component {
 
         <TouchableOpacity
           style={styles.child}
-          onPress={() => this.showDatePicker()}
+          onPress={() => this.showDatePicker(2)}
         >
           <Text style={styles.buttonBigtext}>FUTURE DATE</Text>
           <Text style={styles.buttonSmalltext}>

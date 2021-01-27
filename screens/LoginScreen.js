@@ -16,7 +16,7 @@ import Dialogs from "../screens/Utility/Dialogs";
 import Spinner from "react-native-loading-spinner-overlay";
 import { Icon, Header, Input } from "react-native-elements";
 import axios from "axios";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 
 var contextData;
 class LoginScreen extends React.Component {
@@ -92,7 +92,7 @@ class LoginScreen extends React.Component {
 
     axios
 
-      .post(CONSTANTS.API_BASE_URL + "/login", {
+      .post(GLAM_CONSTANTS.API_BASE_URL + "/login", {
         phone_number: phone,
         password: password,
       })

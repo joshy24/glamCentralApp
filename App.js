@@ -10,15 +10,13 @@ import {
   Alert,
   AsyncStorage,
 } from "react-native";
-import {
-  createSwitchNavigator,
-  createAppContainer,
-  createDrawerNavigator,
-  createStackNavigator,
-  DrawerItems,
-} from "react-navigation";
+
+import { createAppContainer, createSwitchNavigator } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
+import { createDrawerNavigator } from 'react-navigation-drawer'
+
 import WelcomeScreen from "./screens/WelcomeScreen";
-import DashboardScreen from "./screens/DashboardScreen";
+import DashboardScreenNew from "./screens/DashboardScreenNew";
 import Icon from "@expo/vector-icons/Ionicons";
 import ViewItemScreen from "./screens/ViewItemScreen";
 import AppIntroSlider from "react-native-app-intro-slider";
@@ -80,7 +78,7 @@ class WalkThroughScreen extends React.Component {
       view = (
         <ImageBackground style={styles.parent} source={item.image}>
           <View style={styles.MainContainer}>
-            <Text style={styles.title}>{item.title} -></Text>
+            <Text style={styles.title}>{item.title} </Text>
             {/* <Text style={styles.description}>{item.text}</Text> */}
             <View style={styles.buttons}>
               <Button
@@ -382,7 +380,8 @@ const slides = [
 
 const DashboardStack = createStackNavigator({
   Home: {
-    screen: DashboardScreen,
+    screen: DashboardScreenNew,
+    options:{ headerShown: false}
   },
   Category: {
     screen: CategoryScreen,

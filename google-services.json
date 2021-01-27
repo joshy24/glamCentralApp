@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "225016247801-1evus0ijfi6aoj94t0o8codorrhgqeoi.apps.googleusercontent.com",
+          "client_id": "225016247801-gdubnh0829rkojb7m92a8t3dj0ejmt1t.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.epicteck.glamcentralstylist",
-            "certificate_hash": "9cfd3c5456ad4343458e8bb8f03193c497f7ff4b"
+            "certificate_hash": "0ed61dc300870f47e022be1f7e2e8b97433d2c36"
           }
         },
         {
@@ -45,12 +45,20 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:225016247801:android:c39e4be2e7d75e44723928",
+        "mobilesdk_app_id": "1:225016247801:android:37b80a6f759c8191723928",
         "android_client_info": {
           "package_name": "com.glamscentral.android"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "225016247801-5qh3ddf0eb6mc65tfp6c1bqgc2v92qgu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.glamscentral.android",
+            "certificate_hash": "284850848464e3e41263ac3c3ad09d2e4cdc97fe"
+          }
+        },
         {
           "client_id": "225016247801-53t5r8jqa27120anlivrg86cm2f1aj8f.apps.googleusercontent.com",
           "client_type": 3

@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import PaystackWebView from "react-native-paystack-webview";
 import axios from "axios";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import { Consumer, Context } from "../store/Provider";
 //import Toast from "react-native-simple-toast";
 
@@ -52,31 +52,31 @@ class MakePaymentNowWebView extends React.Component {
   }
 
   confirmPaymentNow = (v) => {
-    //let orderId = requestInfo.order_id;
-    // alert("confirming now")
+      //let orderId = requestInfo.order_id;
+      // alert("confirming now")
 
-    try{
-      axios
-        .post(
-          CONSTANTS.API_BASE_URL + "/verify_transaction",
-          { reference: v, order_id: order },
-          {
-            headers: {
-              Authorization: "Bearer:" + userToken,
-            },
-          }
-        )
-        .then((response) => {
-          this.props.navigation.navigate("CompletedPaymentScreen");
-        })
-        .catch((err) => {
-          //this.props.navigation.navigate("Home");
-          contextData.showAlert("Error occured verifying payment");
-        });
-    }
-    catch(err){
-      contextData.showAlert(JSON.stringify(err));
-    }
+      try{
+        axios
+          .post(
+            GLAM_CONSTANTS.API_BASE_URL + "/verify_transaction",
+            { reference: v, order_id: order },
+            {
+              headers: {
+                Authorization: "Bearer:" + userToken,
+              },
+            }
+          )
+          .then((response) => {
+            this.props.navigation.navigate("CompletedPaymentScreen");
+          })
+          .catch((err) => {
+            //this.props.navigation.navigate("Home");
+            contextData.showAlert("Error occured verifying payment");
+          });
+      }
+      catch(err){
+        contextData.showAlert(JSON.stringify(err));
+      }
   };
 
   cancelPayment = (e) => {
@@ -89,7 +89,7 @@ class MakePaymentNowWebView extends React.Component {
         <PaystackWebView
           buttonText="Pay Now"
           showPayButton={false}
-          paystackKey="pk_test_74edfd9d3c3ddda8aa83a097f4a835b2515046c7"
+          paystackKey="pk_live_f25f5a6abe3fbba01aa72117f5b9ef5bbbeac316"
           amount={requestInfo.total_cost}
           billingEmail={loggedInUser.email}
           billingMobile={loggedInUser.phone_number}
@@ -98,7 +98,6 @@ class MakePaymentNowWebView extends React.Component {
           SafeAreaViewContainer={{ marginTop: 5 }}
           SafeAreaViewContainerModal={{ marginTop: 5 }}
           onCancel={(e) => {
-            Alert.alert("Payment was successful", JSON.stringify(e))
             // handle response here
             if (e && e.data && e.data.transactionRef.status == "success") {
               this.confirmPaymentNow(e.data.transactionRef.reference);

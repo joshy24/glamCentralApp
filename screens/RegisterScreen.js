@@ -21,7 +21,7 @@ import { Consumer, Context } from "../store/Provider";
 import DatePicker from "react-native-datepicker";
 import { BackHandler } from "react-native";
 import Spinner from "react-native-loading-spinner-overlay";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import axios from "axios";
 import { Icon, Header, Input } from "react-native-elements";
 import { showMessage, hideMessage } from "react-native-flash-message";
@@ -126,7 +126,7 @@ class RegisterScreen extends React.Component {
     });
 
     axios
-      .post(CONSTANTS.API_BASE_URL + "/signup", this.state.registerData)
+      .post(GLAM_CONSTANTS.API_BASE_URL + "/signup", this.state.registerData)
       .then((response) => {
         //console.log(response.data);
         this.setState({
@@ -275,7 +275,7 @@ class LoginScreenStepThree extends React.Component {
   getAddressFromGPS = async () => {
     if (this.props.location.coords.longitude) {
       axios
-        .post(CONSTANTS.API_BASE_URL + "/address", {
+        .post(GLAM_CONSTANTS.API_BASE_URL + "/address", {
           lat: this.props.location.coords.latitude,
           lng: this.props.location.coords.longitude,
         })

@@ -21,13 +21,10 @@ import {
 } from "react-native-elements";
 import DatePicker from "react-native-datepicker";
 import axios from "axios";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import { Consumer, Context } from "../store/Provider";
 //import Toast from "react-native-simple-toast";
-import { Notifications } from "expo";
-import * as Permissions from "expo-permissions";
-import Constants from "expo-constants";
-
+import * as Notifications from 'expo-notifications';
 import EventBus from "react-native-event-bus"
 
 var selectedStylist;
@@ -55,6 +52,8 @@ var address;
 "user_rating":4}
 */
 
+let cancelToken;
+
 class BookNowScreenFour extends React.Component {
   constructor(props) {
     super(props);
@@ -74,7 +73,9 @@ class BookNowScreenFour extends React.Component {
       orderInfo: "",
       fullStylistData: {},
       selectedService: "",
-      selectedStylist: {}
+      selectedStylist: {},
+      count: 0,
+      interval: {}
     };
   }
 
@@ -97,6 +98,103 @@ class BookNowScreenFour extends React.Component {
     };
   };
 
+  startPolling = () => {
+      this.setState({
+        count: 0,
+        interval: {}
+      })
+
+      this.state.interval = setInterval(() => {
+        if (this.state.count >= 20) {
+          clearInterval(this.state.interval);
+          return;
+        }
+  
+        this.setState(state => {
+            var c = state.count
+            return {
+              count: c+1
+            }
+        })
+
+        var dataRequest = {
+            order_id: this.state.orderInfo
+        }
+
+
+        if (typeof cancelToken != typeof undefined) {
+          cancelToken.cancel("Operation canceled due to new request.");
+        }
+
+        cancelToken = axios.CancelToken.source();
+
+        //check if stylist responded
+        axios
+            .post(GLAM_CONSTANTS.API_BASE_URL + "/check_stylist_response", dataRequest, {
+              headers: {
+                Authorization: "Bearer:" + this.state.userToken,
+              },
+              cancelToken: cancelToken.token
+            })
+            .then((response) => {
+                switch(response.data.response){
+                    case "declined":
+                        Notifications.dismissAllNotificationsAsync()
+
+                        if (typeof cancelToken != typeof undefined) {
+                          cancelToken.cancel("Operation canceled");
+                        }
+                  
+                        clearInterval(this.state.interval);
+
+                        this.setState({
+                          showOverLay: false,
+                        });
+                
+                        contextData.showAlert(
+                          "Request rejected by Stylist, please select another stylist"
+                        );
+                  
+                        this.cancelRequest();
+                    break;
+                    case "agreed":
+                        Notifications.dismissAllNotificationsAsync()
+
+                        if (typeof cancelToken != typeof undefined) {
+                          cancelToken.cancel("Operation canceled");
+                        }
+                  
+                        clearInterval(this.state.interval);
+
+                        this.setState({
+                          showOverLay: false,
+                        });
+                  
+                        this.props.navigation.navigate("BookNowScreenFive", {
+                          data: this.state.fullStylistData,
+                          order: this.state.orderInfo
+                        });
+                    break;
+                    case "not_responded":
+
+                    break;
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+                //self.props.navigation.navigate("BookNowScreenFive");
+                contextData.showAlert(
+                  "Error occured processing request, try again later"
+                );
+                self.setState({
+                  showOverLay: false,
+                });
+                //clearInterval(intervalStuff);
+            });
+
+      }, 3000); //Every 3 seconds
+  }
+
   gotoScreen = () => {
     this.props.navigation.navigate("ViewItem");
   };
@@ -109,26 +207,6 @@ class BookNowScreenFour extends React.Component {
     this.setState({
       date: date,
     });
-  };
-
-  bookNow__ = () => {
-    this.setState({
-      showOverLay: true,
-    });
-
-    var self = this;
-
-    var intervalStuff = setInterval(function () {
-      self.setState({
-        counter: self.state.counter - 1,
-      });
-
-      if (self.state.counter == 40) {
-        self.setState({
-          showOverLay: false,
-        });
-      }
-    }, 1000);
   };
 
   bookNow = () => {
@@ -154,7 +232,7 @@ class BookNowScreenFour extends React.Component {
     };
 
     axios
-      .post(CONSTANTS.API_BASE_URL + "/book_stylist", dataRequest, {
+      .post(GLAM_CONSTANTS.API_BASE_URL + "/book_stylist", dataRequest, {
         headers: {
           Authorization: "Bearer:" + this.state.userToken,
         },
@@ -194,6 +272,10 @@ class BookNowScreenFour extends React.Component {
           orderInfo: response.data.response,
         });
         
+        //we wait for the stylists response at this moment
+        //we setup the polling at this point 
+        this.startPolling()
+        
 
         // self.props.navigation.navigate("BookNowScreenFive", {
         //   data: dataRequest
@@ -201,15 +283,15 @@ class BookNowScreenFour extends React.Component {
         //clearInterval(intervalStuff);
       })
       .catch((err) => {
-        console.log(err.response);
-        //self.props.navigation.navigate("BookNowScreenFive");
-        contextData.showAlert(
-          "Error occured processing request, try again later"
-        );
-        self.setState({
-          showOverLay: false,
-        });
-        //clearInterval(intervalStuff);
+          console.log(err.response);
+          //self.props.navigation.navigate("BookNowScreenFive");
+          contextData.showAlert(
+            "Error occured processing request, try again later"
+          );
+          self.setState({
+            showOverLay: false,
+          });
+          //clearInterval(intervalStuff);
       });
   };
 
@@ -241,7 +323,7 @@ class BookNowScreenFour extends React.Component {
       console.log(this.state.orderInfo);
       axios
         .post(
-          CONSTANTS.API_BASE_URL + "/cancel_order",
+          GLAM_CONSTANTS.API_BASE_URL + "/cancel_order",
           { order_id: this.state.orderInfo },
           {
             headers: {
@@ -267,7 +349,7 @@ class BookNowScreenFour extends React.Component {
     }
   };
 
-  registerForPushNotificationsAsync = async () => {
+  /*registerForPushNotificationsAsync = async () => {
     try{
       if (Constants.isDevice) {
         const { status: existingStatus } = await Permissions.getAsync(
@@ -340,7 +422,7 @@ class BookNowScreenFour extends React.Component {
       catch(e){
         contextData.showAlert(JSON.stringify(e));
       }
-  };
+  };*/
 
   componentDidMount() {
     // register push notifications
@@ -351,6 +433,16 @@ class BookNowScreenFour extends React.Component {
     );*/
 
     EventBus.getInstance().addListener("stylist_response", this.listener = data => {
+
+      Notifications.dismissAllNotificationsAsync()
+
+      if (typeof cancelToken != typeof undefined) {
+        cancelToken.cancel("Operation canceled");
+      }
+
+      clearInterval(this.state.interval);
+
+
       // handle the event
       if(data.order_id  && data.response === "agreed"){
         this.setState({
@@ -363,8 +455,12 @@ class BookNowScreenFour extends React.Component {
         });
       }
       else if(data.order_id && data.response === "declined"){
+        this.setState({
+          showOverLay: false,
+        });
+
         contextData.showAlert(
-          "Request rejected by Stylist, please try again later"
+          "Request rejected by Stylist, please select another stylist"
         );
   
         this.cancelRequest();

@@ -15,7 +15,7 @@ import DatePicker from "react-native-datepicker";
 import { Consumer, Context } from "../store/Provider";
 //import Toast from "react-native-simple-toast";
 import axios from "axios";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 
 var pageTitle, generalCategoryTitle, categoryInfo;
 var contextData;
@@ -147,7 +147,7 @@ class ChangeAppointmentDate extends React.Component {
   changeDate = async () => {
     try {
       let response = await axios.post(
-        CONSTANTS.API_BASE_URL + "/change_order_date",
+        GLAM_CONSTANTS.API_BASE_URL + "/change_order_date",
         {
           order_id: categoryInfo._id,
           new_date: this.state.appointmentDate.date,

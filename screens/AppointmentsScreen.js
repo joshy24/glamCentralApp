@@ -16,7 +16,7 @@ import { Icon, Header, Overlay, Rating, AirbnbRating } from "react-native-elemen
 import FormButton from "./Forms/Button";
 import FormContainer from "./Forms/Container";
 import axios from "axios";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import { Consumer, Context } from "../store/Provider";
 import Spinner from "react-native-loading-spinner-overlay";
 //import Toast from "react-native-simple-toast";
@@ -72,7 +72,7 @@ class AppointmentsScreen extends React.Component {
   getOrdersNow = async (token) => {
     try {
       let response = await axios.post(
-        CONSTANTS.API_BASE_URL + "/appointments",
+        GLAM_CONSTANTS.API_BASE_URL + "/appointments",
         {},
         {
           headers: {
@@ -118,7 +118,7 @@ class AppointmentsScreen extends React.Component {
 
     try {
       let response = await axios.post(
-        CONSTANTS.API_BASE_URL + "/cancel_order",
+        GLAM_CONSTANTS.API_BASE_URL + "/cancel_order",
         { order_id: orderId },
         {
           headers: {
@@ -155,7 +155,7 @@ class AppointmentsScreen extends React.Component {
 
     try {
       let response = await axios.post(
-        CONSTANTS.API_BASE_URL + "/rate_stylist",
+        GLAM_CONSTANTS.API_BASE_URL + "/rate_stylist",
         { order_id: orderId, comment: this.state.comment, rating : this.state.rating },
         {
           headers: {

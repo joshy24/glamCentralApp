@@ -16,7 +16,7 @@ import { Icon, Header, Overlay } from "react-native-elements";
 import FormButton from "./Forms/Button";
 import FormContainer from "./Forms/Container";
 import axios from "axios";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import { Consumer, Context } from "../store/Provider";
 import Spinner from "react-native-loading-spinner-overlay";
 //import Toast from "react-native-simple-toast";
@@ -74,7 +74,7 @@ class CompletedAppointmentsScreen extends React.Component {
   getOrdersNow = async (token) => {
     try {
       let response = await axios.post(
-        CONSTANTS.API_BASE_URL + "/completed_appointments",
+        GLAM_CONSTANTS.API_BASE_URL + "/completed_appointments",
         {},
         {
           headers: {
@@ -101,7 +101,7 @@ class CompletedAppointmentsScreen extends React.Component {
 
     try {
       let response = await axios.post(
-        CONSTANTS.API_BASE_URL + "/cancel_order",
+        GLAM_CONSTANTS.API_BASE_URL + "/cancel_order",
         { order_id: orderId },
         {
           headers: {
@@ -161,7 +161,7 @@ class CompletedAppointmentsScreen extends React.Component {
   rateNow = async () => {
     try {
       let response = await axios.post(
-        CONSTANTS.API_BASE_URL + "/rate_stylist",
+        GLAM_CONSTANTS.API_BASE_URL + "/rate_stylist",
         {
           order_id: this.state.requestInfo._id,
           rating: this.state.ratingValue,

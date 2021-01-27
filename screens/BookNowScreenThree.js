@@ -14,7 +14,7 @@ import { Icon, Header, Rating, AirbnbRating } from "react-native-elements";
 import DatePicker from "react-native-datepicker";
 import { Consumer, Context } from "../store/Provider";
 import axios from "axios";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import Spinner from "react-native-loading-spinner-overlay";
 
 var pageTitle;
@@ -101,7 +101,7 @@ class BookNowScreenThree extends React.Component {
     // console.log("Address info: ", addressData);
     try {
       let response = await axios.get(
-        CONSTANTS.API_BASE_URL +
+        GLAM_CONSTANTS.API_BASE_URL +
           "/search_stylists?admin_area=" +
           addressData.lga + "&service_id="+service_id,
         //"Alimosho",
@@ -111,7 +111,7 @@ class BookNowScreenThree extends React.Component {
           },
         }
       );
-       
+
       this.setState({
         stylists: response.data ? response.data : [],
         loadingStylist: false,

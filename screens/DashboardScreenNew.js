@@ -30,53 +30,76 @@ import EventBus from "react-native-event-bus"
 //try using a functional component for this
 //test on another persons device
 
-var contextData;
-class DashboardScreen extends React.Component {
-  constructor(props) {
-    super(props);
+const DashboardScreenNew = ({navigation, props}) =>  {
 
-    this.state = {
-      expoPushToken: "",
-      token: "",
-      notification: {},
+  const [expoPushToken, setExpoPushToken] = React.useState("");  
+  const [token, setToken] = React.useState("");  
+  const [notification, setNotification] = React.useState({})
+
+  const contextData = React.useContext(Context);
+
+  const notificationListener = React.useRef();
+  const responseListener = React.useRef();
+
+  React.useEffect(() => {
+    
+    contextData.getServices();
+
+    getSocketData();
+    
+    registerForPushNotificationsAsyncNew();
+
+    // This listener is fired whenever a notification is received while the app is foregrounded
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+        console.log({notification})
+        setNotification(notification);
+    });
+
+    // This listener is fired whenever a user taps on or interacts with a notification (works when app is foregrounded, backgrounded, or killed)
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log({response});
+
+      if (
+        response.notification.request.content.data.stylist_response
+      ) {
+
+          EventBus.getInstance().fireEvent("stylist_response", {
+              response: response.notification.request.content.data.stylist_response,
+              order_id: response.notification.request.content.data.order
+          })
+
+      }
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener);
+      Notifications.removeNotificationSubscription(responseListener);
     };
+  }, []);
+
+  const getSocketData = async() => {
+    var tok = await (contextData._retrieveData("token"));
+
+    var user = await (contextData._retrieveData("user"))
+
+    user = JSON.parse(user)
+
+    console.log(user._id)
+
+    contextData.sendSocketNotification(user.lga, user._id, tok);
   }
 
-  static navigationOptions = {
-    header: null,
-    // headerShown: false
-    //title: 'Dashboard',
-    // headerStyle: {
-    //   backgroundColor: '#FF9391',
-    // },
-    // headerTintColor: '#000',
-    // headerTitleStyle: {
-    //   fontWeight: 'bold',
-    // },
-    // headerLeft: (
-    //   <Icon
-    //   color="#A8095B"
-    //   containerStyle={{marginLeft}}
-    //   name='bars'
-    //   type='font-awesome'
-    //   color='#f50'
-    //   onPress={() => console.log('hello')} />
-    // ),
-  };
-
-  static contextType = Context;
-
-  savePushToken = (token) => {
-      if(this.state.token && this.state.token.length > 0){
+  const savePushToken = (tk) => {
+      if(token && token.length > 0){
         axios
           .post(
             GLAM_GLAM_CONSTANTS.API_BASE_URL + "/save_fcm_token",
             {
-              fcm_token: token,
+              fcm_token: tk,
             },
             {
               headers: {
-                Authorization: "Bearer:" + this.state.token,
+                Authorization: "Bearer:" + token,
               },
             }
           )
@@ -89,8 +112,8 @@ class DashboardScreen extends React.Component {
       }
   };
 
-  registerForPushNotificationsAsyncNew = async() => {
-      let token;
+  const registerForPushNotificationsAsyncNew = async() => {
+      let tk;
       if (Constants.isDevice) {
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
         let finalStatus = existingStatus;
@@ -105,13 +128,13 @@ class DashboardScreen extends React.Component {
 
         //let experienceId = GLAM_GLAM_CONSTANTS.EXPERIENCE_ID
 
-        token = (await Notifications.getExpoPushTokenAsync()).data;
+        tk = (await Notifications.getExpoPushTokenAsync()).data;
         
-        if(token && token.length > 0){
-          console.log("EXPO token", token);
+        if(tk && tk.length > 0){
+          console.log("EXPO token", tk);
           alert('Token Discovered');
-          this.setState({ expoPushToken: token });
-          this.savePushToken(token);
+          setExpoPushToken(tk);
+          savePushToken(tk);
         }
       } else {
         alert('Must use physical device for Push Notifications');
@@ -171,29 +194,29 @@ class DashboardScreen extends React.Component {
       }
   };*/
   
-  _handleNotification = (notification) => {
+  const _handleNotification = (notify) => {
 
       //console.log("received new notification");
-      console.log({notification})
+      console.log({notify})
     
-      this.setState({ notification: notification });
+      setNotification(notify);
 
         //console.log(notification);
         //console.log(this.state.orderInfo); //Current request order ID
     
       if (
-        notification.data.stylist_response
+        notify.data.stylist_response
       ) {
 
           EventBus.getInstance().fireEvent("stylist_response", {
-              response: notification.data.stylist_response,
-              order_id: notification.data.order
+              response: notify.data.stylist_response,
+              order_id: notify.data.order
           })
 
       }
   };
   
-  componentDidMount() {
+  /*componentDidMount() {
       contextData = this.context;
       contextData.getServices();
 
@@ -230,34 +253,34 @@ class DashboardScreen extends React.Component {
         }
       });
 
-      /*Notifications.addListener( 
-        this._handleNotification
-      );*/
+      //Notifications.addListener( 
+      //  this._handleNotification
+      //);
       
       this.registerForPushNotificationsAsyncNew();
-  }
+  }*/
 
-  gotoScreen = () => {
-    this.props.navigation.navigate("ViewItem");
+  const gotoScreen = () => {
+    navigation.navigate("ViewItem");
   };
 
-  toggleMenu = () => {
-    this.props.navigation.toggleDrawer();
+  const toggleMenu = () => {
+    navigation.toggleDrawer();
   };
 
-  gotoPage = (page) => {
-    this.props.navigation.navigate("Category", { title: page });
+  const gotoPage = (page) => {
+    navigation.navigate("Category", { title: page });
   };
 
-  gotoTest = () => {
-    this.props.navigation.navigate("MakePaymentNowWebView");
+  const gotoTest = () => {
+    navigation.navigate("MakePaymentNowWebView");
   };
 
-  showEventNumber = () => {
+  const showEventNumber = () => {
     alert("Kindly call the number for event booking: 09079679939");
   };
 
-  render() {
+  
     return (
       <Consumer>
         {(context) => (
@@ -265,7 +288,7 @@ class DashboardScreen extends React.Component {
             <Header
               backgroundColor="#FF9391"
               placement="left"
-              leftComponent={<LeftIconContainer pressNow={this.toggleMenu} />}
+              leftComponent={<LeftIconContainer pressNow={toggleMenu} />}
               // centerComponent={{
               //   text: "glamCentral",
               //   style: { color: "#A8095B" }
@@ -279,7 +302,7 @@ class DashboardScreen extends React.Component {
               </View>
               <TouchableOpacity
                 style={styles.child}
-                onPress={() => this.gotoPage("MAKEUP styles")}
+                onPress={() => gotoPage("MAKEUP styles")}
                 //onPress={() => this.gotoTest()}
               >
                 <View style={styles.leftSide}>
@@ -320,7 +343,7 @@ class DashboardScreen extends React.Component {
 
               <TouchableOpacity
                 style={styles.child}
-                onPress={() => this.gotoPage("HAIR styles")}
+                onPress={() => gotoPage("HAIR styles")}
               >
                 <View style={styles.rightImage}>
                   {/* <ImageBackground
@@ -360,7 +383,7 @@ class DashboardScreen extends React.Component {
 
               <TouchableOpacity
                 style={styles.child}
-                onPress={() => this.gotoPage("NAILS styles")}
+                onPress={() => gotoPage("NAILS styles")}
               >
                 <View style={styles.leftSide}>
                   <Image
@@ -400,7 +423,7 @@ class DashboardScreen extends React.Component {
 
               <TouchableOpacity
                 style={styles.child}
-                onPress={() => this.showEventNumber()}
+                onPress={() => showEventNumber()}
               >
                 <View
                   style={{ flex: 1, flexDirection: "row", maxWidth: "100%" }}
@@ -461,7 +484,6 @@ class DashboardScreen extends React.Component {
         )}
       </Consumer>
     );
-  }
 }
 
 const styles = StyleSheet.create({
@@ -521,8 +543,14 @@ const styles = StyleSheet.create({
   },
 });
 
-class CenterMenuComponent extends React.Component {
-  render() {
+
+//Removes the header for this screen
+DashboardScreenNew.navigationOptions = {
+    header: null
+};
+
+const CenterMenuComponent  = () => {
+  
     return (
       <View
         style={{
@@ -568,21 +596,10 @@ class CenterMenuComponent extends React.Component {
         </View>
       </View>
     );
-  }
 }
 
-class LeftIconContainer extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  onPress = () => {
-    this.props.pressNow();
-  };
-
-  render() {
-    return <Icon name="menu" color="#A8095B" onPress={this.onPress} />;
-  }
+const LeftIconContainer  = (props) => {
+  return <Icon name="menu" color="#A8095B" onPress={props.pressNow} />;
 }
 
-export default DashboardScreen;
+export default DashboardScreenNew;

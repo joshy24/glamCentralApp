@@ -24,11 +24,8 @@
       "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "package": "com.glamscentral.android",
       "googleServicesFile": "./google-services.json",
-      "config": {
-        "googleSignIn": {
-          "apiKey": "AIzaSyC0dv-PrbLMUCMXnWpHDFoIGyFTuCPE0NM"
-        }
-      }
+      "useNextNotificationsApi": true,
+      "versionCode": 8
     }
   }
 }

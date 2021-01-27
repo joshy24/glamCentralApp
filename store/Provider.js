@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import axios from "axios";
 import Dialogs from "../screens/Utility/Dialogs";
-import CONSTANTS from "../config/constant";
+import GLAM_CONSTANTS from "../config/glam_constants";
 import { AsyncStorage } from "react-native";
-import io from "socket.io-client";
+import { io } from 'socket.io-client';
 import dateFormat from "dateformat";
 import { showMessage, hideMessage } from "react-native-flash-message";
 
@@ -76,9 +76,10 @@ class Provider extends Component {
   };
 
   sendSocketNotification(userLGA, userId, token) {
-    const socket = io("http://glam-central.herokuapp.com");
-
+    const socket = io("https://glam-central.herokuapp.com");
+    
     socket.on("connect", function (res) {
+      console.log({res})
       socket.on("stylist_connected", function (data) {
         console.log("Just connected");
         console.log(data);
@@ -101,7 +102,7 @@ class Provider extends Component {
         userLGA,
         "user",
         function (d) {
-          //console.log(d);
+          console.log(d);
         }
       );
     });
@@ -126,7 +127,7 @@ class Provider extends Component {
 
     axios
 
-      .post(CONSTANTS.API_BASE_URL + "/login", {
+      .post(GLAM_CONSTANTS.API_BASE_URL + "/login", {
         phone_number: email,
         password: password,
       })
@@ -254,7 +255,7 @@ class Provider extends Component {
 
   getAddressFromGPS = async (latitude, longitude) => {
     axios
-      .post(CONSTANTS.API_BASE_URL + "/address", {
+      .post(GLAM_CONSTANTS.API_BASE_URL + "/address", {
         lat: latitude,
         lon: longitude,
       })
@@ -272,7 +273,7 @@ class Provider extends Component {
     AsyncStorage.getItem("token")
       .then((token) => {
         axios
-          .get(CONSTANTS.API_BASE_URL + "/services", {
+          .get(GLAM_CONSTANTS.API_BASE_URL + "/services", {
             headers: {
               Authorization: "Bearer:" + this.state.token,
             },
@@ -280,8 +281,6 @@ class Provider extends Component {
           .then((response) => {
             //console.log(response.data);
             // console.log("Services success")
-
-            console.log(response.data)
 
             this._storeData("services", JSON.stringify(response.data));
             this.setState({
@@ -301,7 +300,7 @@ class Provider extends Component {
   getStylistNow = async () => {
     try {
       let response = await axios.get(
-        CONSTANTS.API_BASE_URL + "/search_stylists?admin_area=Alimosho",
+        GLAM_CONSTANTS.API_BASE_URL + "/search_stylists?admin_area=Alimosho",
         {
           headers: {
             Authorization: "Bearer:" + this.state.token,
