@@ -17,6 +17,8 @@ import axios from "axios";
 import GLAM_CONSTANTS from "../config/glam_constants";
 import Spinner from "react-native-loading-spinner-overlay";
 
+import EventBus from "react-native-event-bus"
+
 var pageTitle;
 var addressData = {};
 var categoryInfo = {};
@@ -90,6 +92,41 @@ class BookNowScreenThree extends React.Component {
     this.setState({ token: contextData.token });
 
     contextData._storeData("bookingInfo", JSON.stringify(addressData));
+
+
+    EventBus.getInstance().addListener("stylist_status", this.listener = data => {
+
+      // handle the event
+      if(data.stylist && data.stylist.length > 0){
+          if(this.state.stylists.length > 0){
+              this.setState(state => {
+                  var stylists = state.stylists;
+
+                  var new_stylists_array = [];
+
+                  stylists.map(stylist => {
+                      if(stylist._id == data.stylist){
+                          //found stylist
+                          stylist.online = data.online;
+
+                          new_stylists_array.push(stylist)
+                      }
+                      else{
+                        new_stylists_array.push(stylist)
+                      }
+                  })
+                  
+                  return {
+                      stylists: new_stylists_array
+                  }
+              })
+          }
+      }
+    })
+  }
+
+  componentWillUnmount() {
+    EventBus.getInstance().removeListener(this.listener);
   }
 
   refreshAgain = () => {

@@ -131,8 +131,7 @@ const DashboardScreenNew = ({navigation, props}) =>  {
         tk = (await Notifications.getExpoPushTokenAsync()).data;
         
         if(tk && tk.length > 0){
-          console.log("EXPO token", tk);
-          alert('Token Discovered');
+          
           setExpoPushToken(tk);
           savePushToken(tk);
         }

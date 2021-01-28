@@ -7,6 +7,8 @@ import { io } from 'socket.io-client';
 import dateFormat from "dateformat";
 import { showMessage, hideMessage } from "react-native-flash-message";
 
+import EventBus from "react-native-event-bus"
+
 const Context = React.createContext();
 
 class Provider extends Component {
@@ -79,15 +81,19 @@ class Provider extends Component {
     const socket = io("https://glam-central.herokuapp.com");
     
     socket.on("connect", function (res) {
-      console.log({res})
+      
       socket.on("stylist_connected", function (data) {
-        console.log("Just connected");
-        console.log(data);
+          EventBus.getInstance().fireEvent("stylist_status", {
+            stylist: data,
+            online: true
+          })
       });
 
       socket.on("stylist_disconnected", function (data) {
-        console.log("Just disconnected");
-        console.log(data);
+          EventBus.getInstance().fireEvent("stylist_status", {
+            stylist: data,
+            online: false
+          })
       });
 
       socket.on("invalid_token", function () {
